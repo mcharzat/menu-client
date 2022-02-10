@@ -52,7 +52,7 @@ public class MenuCommandLineTests {
 
     @Test
     @Order(3)
-    @DisplayName("create and save a menu")
+    @DisplayName("delete a menu")
     public void deleteMenu() {
         int exitCode = cmd.execute("delete_menu", "-id=1");
         assertEquals(0, exitCode);
