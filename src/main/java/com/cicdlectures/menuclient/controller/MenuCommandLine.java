@@ -26,8 +26,11 @@ public class MenuCommandLine implements Callable<Integer> {
     @Option(names = "-id", description = "Id of the menu to be deleted. Mandatory for command delete_menu")
     private int idMenu;
 
-    @Option(names = "-clear", description = "Delete all menus")
+    @Option(names = {"-clear", "-all"}, description = "Delete all menus")
     private boolean clear;
+
+    @Option(names = "-menu", description = "Menu to save")
+    private String menu = "{\"name\": \"Menu spécial du chef\", \"dishes\": [{\"name\": \"Bananes aux fraises\"},{\"name\": \"Bananes flambées\"}]}";
 
     public void listMenus () throws Exception {
         // create a client
@@ -81,12 +84,10 @@ public class MenuCommandLine implements Callable<Integer> {
         // create a client
         var client = HttpClient.newHttpClient();
 
-        String requestBody = "{\"name\": \"Menu spécial du chef\", \"dishes\": [{\"name\": \"Bananes aux fraises\"},{\"name\": \"Bananes flambées\"}]}";
-
         // create a request
         var request = HttpRequest.newBuilder(
                         URI.create(this.server + "/menus"))
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .POST(HttpRequest.BodyPublishers.ofString(this.menu))
                 .header("Content-type", "application/json")
                 .build();
 
@@ -118,6 +119,8 @@ public class MenuCommandLine implements Callable<Integer> {
 
     public Integer call() throws Exception {
         if (this.command.equals("list_menus")) {
+            this.listMenus();
+        } else if (command.equals("delete_menu") && this.clear) {
             this.listMenus();
         } else if (command.equals("delete_menu")) {
             this.deleteMenu();
