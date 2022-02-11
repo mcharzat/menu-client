@@ -24,7 +24,7 @@ public class MenuCommandLine implements Callable<Integer> {
     private String command;
 
     @Option(names = "-id", description = "Id of the menu to be deleted. Mandatory for command delete_menu")
-    private int idMenu;
+    private int idMenu = -1;
 
     @Option(names = {"-clear", "-all"}, description = "Delete all menus")
     private boolean clear;
@@ -47,7 +47,6 @@ public class MenuCommandLine implements Callable<Integer> {
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         // the response:
-        System.out.println(response.body());
         JSONArray array = new JSONArray(response.body());
         if (this.clear) {
             for (int k = 0; k < array.length(); k++) {
@@ -61,23 +60,27 @@ public class MenuCommandLine implements Callable<Integer> {
         if (array.length() != 0) {
             for (int i = 0; i <  array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
-                int len = json.getString("name").length() + json.getString("id").length() + 26;
-
-                System.out.println("~".repeat(len));
-                System.out.println("~~~~~~~~  " + json.getString("name") + " (id:" + json.getString("id") + ")  ~~~~~~~~");
-                System.out.println("~".repeat(len));
-                JSONArray dishes = new JSONArray(json.getString("dishes"));
-
-                for (int j = 0; j < dishes.length(); j++) {
-                    int len2 = dishes.getJSONObject(j).getString("name").length() + 11;
-                    len2 = len - len2;
-                    System.out.println("# # # "+dishes.getJSONObject(j).getString("name") + " ".repeat(len2) + "# # #");
-                }
-                System.out.println("~".repeat(len));
-                System.out.println("~".repeat(len));
-                System.out.println();       // saut de ligne entre deux menus
+                this.displayMenu(json);
             }
         } else System.out.println("No menus in server.");
+    }
+
+    public void displayMenu (JSONObject menu) throws Exception {
+        int len = menu.getString("name").length() + menu.getString("id").length() + 26;
+
+        System.out.println("~".repeat(len));
+        System.out.println("~~~~~~~~  " + menu.getString("name") + " (id:" + menu.getString("id") + ")  ~~~~~~~~");
+        System.out.println("~".repeat(len));
+        JSONArray dishes = new JSONArray(menu.getString("dishes"));
+
+        for (int j = 0; j < dishes.length(); j++) {
+            int len2 = dishes.getJSONObject(j).getString("name").length() + 11;
+            len2 = len - len2;
+            System.out.println("# # # "+dishes.getJSONObject(j).getString("name") + " ".repeat(len2) + "# # #");
+        }
+        System.out.println("~".repeat(len));
+        System.out.println("~".repeat(len));
+        System.out.println();       // saut de ligne entre deux menus
     }
 
     public void createMenu () throws Exception {
@@ -95,7 +98,8 @@ public class MenuCommandLine implements Callable<Integer> {
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         // the response:
-        System.out.println(response.body());
+        JSONObject json = new JSONObject(response.body());
+        this.displayMenu(json);
         System.out.println("Creation complete");
     }
 
@@ -113,8 +117,8 @@ public class MenuCommandLine implements Callable<Integer> {
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         // the response:
-        System.out.println(response.body());
-        System.out.println("Delete complete");
+        if (response.body().isEmpty())  System.out.println("Delete complete");
+        else System.out.println("Delete unsuccessful");
     }
 
     public Integer call() throws Exception {
@@ -122,8 +126,10 @@ public class MenuCommandLine implements Callable<Integer> {
             this.listMenus();
         } else if (command.equals("delete_menu") && this.clear) {
             this.listMenus();
-        } else if (command.equals("delete_menu")) {
+        } else if (command.equals("delete_menu") && this.idMenu != -1) {
             this.deleteMenu();
+        } else if (command.equals("delete_menu")) {
+            System.out.println("Delete command need the -id option to be set up.");
         } else if (command.equals("create_menu")) {
           this.createMenu();
         }
