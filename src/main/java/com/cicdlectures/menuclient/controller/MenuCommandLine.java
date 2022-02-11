@@ -56,8 +56,17 @@ public class MenuCommandLine implements Callable<Integer> {
 
     public void displayList (JSONArray array) throws Exception {
         if (array.length() != 0) {
-            JSONObject json = array.getJSONObject(0);
-            System.out.println(json.getString("name"));
+            for (int i = 0; i <  array.length(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                System.out.println("~~~~~~~~  " + json.getString("name") + " (id:" + json.getString("id") + ")  ~~~~~~~~");
+                JSONArray dishes = new JSONArray(json.getString("dishes"));
+
+                for (int j = 0; j < dishes.length(); j++) {
+                    //System.out.println(" - Plat n°" + j);
+                    System.out.println(" - " + dishes.getJSONObject(j).getString("name"));
+                }
+
+            }
         } else System.out.println("No menus in server.");
     }
 
