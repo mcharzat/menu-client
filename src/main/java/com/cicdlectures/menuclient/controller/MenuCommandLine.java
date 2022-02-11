@@ -26,6 +26,9 @@ public class MenuCommandLine implements Callable<Integer> {
     @Option(names = "-id", description = "Id of the menu to be deleted. Mandatory for command delete_menu")
     private int idMenu;
 
+    @Option(names = "-clear", description = "Delete all menus")
+    private boolean clear;
+
     public void listMenus () throws Exception {
         // create a client
         var client = HttpClient.newHttpClient();
@@ -43,7 +46,12 @@ public class MenuCommandLine implements Callable<Integer> {
         // the response:
         System.out.println(response.body());
         JSONArray array = new JSONArray(response.body());
-        this.displayList(array);
+        if (this.clear) {
+            for (int k = 0; k < array.length(); k++) {
+                this.idMenu = array.getJSONObject(k).getInt("id");
+                this.deleteMenu();
+            }
+        } else this.displayList(array);
     }
 
     public void displayList (JSONArray array) throws Exception {
